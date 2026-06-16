@@ -4,9 +4,13 @@ export const editComment = async (req, res)=>{
     try{
         const commentId = req.params.commentId;
         const existingComment = await Comment.findById(commentId);
-        if(existingComment.userId.toString() !== req.user.userId)
+        if(!existingComment)
         {
-            return res.status(400).json({
+            return res.status(400).json({message: "The comment doesnt exist!"});
+        }
+        if(existingComment.userId.equals(req.user.userId))      // used equals instead of == and converting id to string
+        {
+            return res.status(401).json({
                 message: "User Not Authenticated!"
             })
         }
@@ -25,6 +29,17 @@ export const editComment = async (req, res)=>{
 export const deleteComment = async (req, res) =>{ 
     try{
         const commentId = req.params.commentId
+        const existingComment = await Comment.findById(commentId);
+        if(!existingComment)
+        {
+            return res.status(400).json({message: "The comment doesnt exist!"});
+        }
+        if(existingComment.userId.toString() !== req.user.userId)
+        {
+            return res.status(401).json({
+                message: "User Not Authenticated!"
+            })
+        }
         const deletedComment = await Comment.findByIdAndDelete(commentId);
         if(!deletedComment)
         {
