@@ -1,4 +1,5 @@
 import Task from "../models/Tasks.js"
+import Comment from "../models/Comments.js"
 
 export const getAllTasks = async(req, res)=>{
     const reqPayload = req.user;
@@ -37,7 +38,7 @@ export const createTask = async(req, res)=>{
         const createdTask = await Task.create({
           title: req.body.title,
           description: req.body.description,
-          userId: '6a284a949c6577fa5f7baab0'
+          userId: req.user.userId
         })
         res.status(200).json(createdTask);
     }catch(err)
@@ -95,5 +96,32 @@ export const deleteTask= async(req, res)=>{
         res.status(500).json({
             message: err.messaage
         })
+    }
+}
+
+export const createComment = async(req, res)=>{
+    try{
+        const taskId = req.params.taskId;
+        const newComment = await Comment.create({
+            taskId: taskId,
+            userId: req.user.userId,
+            content: req.body.content
+        })
+        res.status(200).json({message: "Comment saved successfully!"})
+    }catch(err)
+    {
+        res.status(200).json({message: err.message});
+    }
+}
+
+export const getAllComments = async(req, res)=>{
+    try{
+        const taskId = req.params.taskId;
+        const allComments = await Comment.find({
+            taskId: taskId
+        }).populate("userId", "name email");
+        res.status(200).json({allComments});
+    }catch(err){
+        res.status(400).json({error: err.message});
     }
 }

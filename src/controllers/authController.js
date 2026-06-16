@@ -79,3 +79,13 @@ export const aboutMe = async (req, res)=>{
         res.status(500).json({message: err.message});
     }
 }
+
+export const logout = async (req, res)=>{
+    try{
+        res.status(200).json({
+            message: "Successfully Logged Out!"
+        });
+    }catch(err){
+        res.status(400).json({message: err.message});
+    }
+}
