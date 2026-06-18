@@ -1,4 +1,5 @@
 import Comment from "../models/Comments.js"
+import { createAuditLog } from "../services/createAuditLog.js";
 
 export const editComment = async (req, res)=>{
     try{
@@ -19,6 +20,8 @@ export const editComment = async (req, res)=>{
         {
             return res.status(404).json({message: "The comment doesnt exist!"});
         }
+        // Audit controller
+        createAuditLog(updatedComment._id, req.user.userId, "UPDATE", "comment");
         res.status(200).json(updatedComment);
     }catch(err)
     {
@@ -45,6 +48,8 @@ export const deleteComment = async (req, res) =>{
         {
             return res.status(400).json({message: "Comment not found!"})
         }
+        // Audit controller
+        createAuditLog(deletedComment._id, req.user.userId, "DELETE", "comment");
         res.status(200).json({
             message: "Comment deleted successfully!"
         })
