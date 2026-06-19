@@ -1,5 +1,6 @@
 import { ObjectId, Timestamp } from "mongodb";
 import mongoose from "mongoose";
+import Project from './Projects.js';
 
 const TaskSchema = mongoose.Schema({
         title: {type: String, required: true},
@@ -7,8 +8,8 @@ const TaskSchema = mongoose.Schema({
         status: {type: String, enum:['active', 'inactive']},
         priority: {type: String},
         dueDate: {type: Date},
-        projectId: {type: ObjectId},
-        userId: {type: ObjectId, required: true},
+        projectId: {type: ObjectId, ref: Project},
+        createdBy: {type: ObjectId, required: true},
     },
     {
         timestamp: true

@@ -1,11 +1,13 @@
 import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
+import User from "./Users.js";
 
 const ProjectSchema = new mongoose.Schema({
         name: {type: String, required: true},
         description: {type: String},
-        userId: {type: ObjectId, required: true},
-        status: {type: String, enum: ['active', 'inactive']},
+        groupId: {type: mongoose.Schema.ObjectId},
+        createdBy: {type: mongoose.Schema.ObjectId, ref: User},
+        status: {type: String, enum: ['active', 'inactive']}
     },
     {
         timestamp: true

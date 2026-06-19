@@ -2,6 +2,8 @@ import User from "../models/Users.js";
 import bcrypt from 'bcrypt';
 import validator from 'email-validator';
 import jwt from 'jsonwebtoken';
+import Audit from "../models/Audit.js";
+import {createAuditLog} from "../services/createAuditLog.js";
 
 async function hashPassword(password){
     const saltRound = 12;
@@ -29,6 +31,8 @@ export const registerUser = async(req, res)=>{
             email: email,
             password: hashedPassword
         })
+        // Audit controller
+        createAuditLog(newUser._id, newUser._id, "CREATE", "user");
         res.status(201).json({message: "User creation successful!"});
     }catch(err)
     {
@@ -58,6 +62,8 @@ export const loginUser = async(req, res)=>{
         }
         // Create JWT Token (invalid after 24hrs)
         const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '24h'})
+        // Audit controller
+        createAuditLog(existingUser._id, existingUser._id, "LOGIN", "user");
         return res.status(200).json({
             message: "User logged in!",
             token: token
@@ -82,6 +88,10 @@ export const aboutMe = async (req, res)=>{
 
 export const logout = async (req, res)=>{
     try{
+        let loggedInUser = await User.findById(req.user.userId);
+        console.log(loggedInUser);
+        // Audit controller
+        createAuditLog(loggedInUser._id, loggedInUser._id, "LOGOUT", "user");
         res.status(200).json({
             message: "Successfully Logged Out!"
         });
