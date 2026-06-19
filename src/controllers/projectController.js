@@ -25,7 +25,7 @@ export const createProject = async (req, res) => {
 
 export const getAllProjects = async (req, res)=>{
     try{
-        const allProjects = await Project.find();
+        const allProjects = await Project.find({_id : req.user.userId});
         if(allProjects.length == 0)
         {
             throw new Error("Projects not found!");
@@ -42,6 +42,10 @@ export const getOneProject = async (req, res)=>{
     try{
         const projectId = req.params.projectId;
         const existingProject = await Project.findById(projectId);
+        if(projectId !== existingProject.createdBy)
+        {
+            return res.status(401).json({message: "Unauthorised Content!"})
+        }
         if(!existingProject)
         {
             throw new Error("Project not found!");
@@ -56,15 +60,18 @@ export const getOneProject = async (req, res)=>{
 export const updateProject = async (req, res)=>{
     try{
         const existingProject = await Project.findById(req.params.projectId);
+        if(existingProject.createdBy !== req.user.userId)
+        {
+            return res.status(401).json({message: "Unauthorised Content!"});
+        }
         if(!existingProject)
         {
             throw new Error("project not found!");
         }
-        let query={};
-        if(req.body.name)
-        {
-            query.name = req.body.name;
-        }
+        // NAME IS A MANDATORY EDIT FIELD
+        let query={
+            name: req.body.name
+        };
         if(req.body.description)
         {
             query.description = req.body.description;
@@ -84,6 +91,11 @@ export const updateProject = async (req, res)=>{
 
 export const deleteProject = async (req, res)=>{
     try{
+        let existingProject = await Project.find(req.params.projectId);
+        if(existingProject.createdBy !== req.user.userId)
+        {
+            return res.status(401).json({message: "Unauthorised Content!"});
+        }
         const deletedProject = await Project.findByIdAndDelete(req.params.projectId);
         if(!deletedProject)
         {
