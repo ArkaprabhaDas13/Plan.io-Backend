@@ -7,7 +7,7 @@ export const getAllTasks = async(req, res)=>{
     const reqPayload = req.user;
     const taskStatus = req.query.status;        // task query
     const taskPriority = req.query.priority     // task priority
-    const taskSearch = req.query.search         // search string for title or description
+    const search = req.query.search         // search string for title or description
     const page = Number(req.query.page) || 1            // page
     const limit = Number(req.query.limit) || 10         // limit
 
@@ -20,9 +20,12 @@ export const getAllTasks = async(req, res)=>{
     {
         query.priority = taskPriority;
     }
-    if(taskSearch)
+    if(search)
     {
-        query.title = {$regex: taskSearch, $options: "i"}
+        query.$or = [
+            {title: {$regex: search, $options: "i"}},
+            {description: {$regex: search, $options: "i"}}
+        ]
     }
     try{
         const tasks = await Task.find(query).sort({dueDate: -1}).skip((page-1)*limit).limit(limit);     // PAGINATION implemented
