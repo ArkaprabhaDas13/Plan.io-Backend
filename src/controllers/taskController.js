@@ -1,12 +1,13 @@
 import Task from "../models/Tasks.js"
 import Comment from "../models/Comments.js"
+import Project from "../models/Projects.js";
 import { createAuditLog } from "../services/createAuditLog.js";
 
 export const getAllTasks = async(req, res)=>{
     const reqPayload = req.user;
     const taskStatus = req.query.status;        // task query
     const taskPriority = req.query.priority     // task priority
-    const taskSearch = req.query.search         // search string for title or description
+    const search = req.query.search         // search string for title or description
     const page = Number(req.query.page) || 1            // page
     const limit = Number(req.query.limit) || 10         // limit
 
@@ -19,9 +20,12 @@ export const getAllTasks = async(req, res)=>{
     {
         query.priority = taskPriority;
     }
-    if(taskSearch)
+    if(search)
     {
-        query.title = {$regex: taskSearch, $options: "i"}
+        query.$or = [
+            {title: {$regex: search, $options: "i"}},
+            {description: {$regex: search, $options: "i"}}
+        ]
     }
     try{
         const tasks = await Task.find(query).sort({dueDate: -1}).skip((page-1)*limit).limit(limit);     // PAGINATION implemented
@@ -34,12 +38,46 @@ export const getAllTasks = async(req, res)=>{
     }
 }
 
+export const getProjectTasks = async(req, res)=>{
+    
+    const taskStatus = req.query.status;        // task query
+    const taskPriority = req.query.priority     // task priority
+    const taskSearch = req.query.search         // search string for title or description
+    const page = Number(req.query.page) || 1            // page
+    const limit = Number(req.query.limit) || 10         // limit
+    const projectId = req.params.projectId        // filter by project id
+
+    const query = {createdBy : req.user.userId, projectId : projectId};
+    if(taskStatus)
+    {
+        query.status = taskStatus;
+    }
+    if(taskPriority)
+    {
+        query.priority = taskPriority;
+    }
+    if(taskSearch)
+    {
+        query.title = {$regex: taskSearch, $options: "i"}
+    }
+
+    try{
+        const allTasks = await Task.find(query).sort({dueDate: -1}).skip((page-1)*limit).limit(limit);     // PAGINATION implemented
+        res.status(200).json(allTasks);
+    }catch(err){
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
 export const createTask = async(req, res)=>{
     try{
         const createdTask = await Task.create({
           title: req.body.title,
           description: req.body.description,
-          createdBy: req.user.userId
+          createdBy: req.user.userId,
+          projectId: req.body.projectId
         })
         if(!createdTask)
         {
