@@ -66,7 +66,11 @@ export const loginUser = async(req, res)=>{
         createAuditLog(existingUser._id, existingUser._id, "LOGIN", "user");
         return res.status(200).json({
             message: "User logged in!",
-            token: token
+            token: token,
+            user: {
+                name: existingUser.name,
+                email: existingUser.email
+            }
         })
     }catch(err)
     {
@@ -78,9 +82,9 @@ export const aboutMe = async (req, res)=>{
     try{
         const reqPayload = req.user;
         // find existing user
-        let existingUser = await User.findById(reqPayload.userId).select("-password");
+        let existingUser = await User.findById(reqPayload.userId).select("-password -_id -createdAt -updatedAt -__v");
         console.log(existingUser);
-        return res.status(200).json({user: existingUser});
+        return res.status(200).json(existingUser);
     }catch(err){
         res.status(500).json({message: err.message});
     }

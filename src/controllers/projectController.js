@@ -25,7 +25,7 @@ export const createProject = async (req, res) => {
 
 export const getAllProjects = async (req, res)=>{
     try{
-        const allProjects = await Project.find({_id : req.user.userId});
+        const allProjects = await Project.find({createdBy : req.user.userId});
         if(allProjects.length == 0)
         {
             throw new Error("Projects not found!");
@@ -42,7 +42,7 @@ export const getOneProject = async (req, res)=>{
     try{
         const projectId = req.params.projectId;
         const existingProject = await Project.findById(projectId);
-        if(projectId !== existingProject.createdBy)
+        if(req.user.userId !== existingProject.createdBy.toString())
         {
             return res.status(401).json({message: "Unauthorised Content!"})
         }
@@ -60,7 +60,7 @@ export const getOneProject = async (req, res)=>{
 export const updateProject = async (req, res)=>{
     try{
         const existingProject = await Project.findById(req.params.projectId);
-        if(existingProject.createdBy !== req.user.userId)
+        if(existingProject.createdBy.toString() !== req.user.userId)
         {
             return res.status(401).json({message: "Unauthorised Content!"});
         }
@@ -91,8 +91,8 @@ export const updateProject = async (req, res)=>{
 
 export const deleteProject = async (req, res)=>{
     try{
-        let existingProject = await Project.find(req.params.projectId);
-        if(existingProject.createdBy !== req.user.userId)
+        let existingProject = await Project.findById(req.params.projectId);
+        if(existingProject.createdBy.toString() !== req.user.userId)
         {
             return res.status(401).json({message: "Unauthorised Content!"});
         }
