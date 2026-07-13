@@ -1,9 +1,10 @@
 import express from 'express';
-import { createProject, getAllProjects, getOneProject, updateProject, deleteProject } from '../controllers/projectController.js';
+import { createProject, getAllProjects, getOneProject, updateProject, deleteProject, getProjectTasks } from '../controllers/projectController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.get('/:projectId/tasks', verifyToken, getProjectTasks)
 router.post('/', verifyToken, createProject);
 router.get('/', verifyToken, getAllProjects);
 router.get('/:projectId', verifyToken, getOneProject);

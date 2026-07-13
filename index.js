@@ -19,7 +19,7 @@ app.use('/api/auth/', authRoutes);
 app.use('/api/audit/', auditRoutes);
 app.use('/api/project/', projectRoutes);
 
-// GLOBAL error handling
+// GLOBAL Middleware for error handling
 app.use((err, req, res, next)=>{
     res.status(500).json({
         message: err.message

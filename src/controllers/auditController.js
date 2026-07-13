@@ -1,4 +1,6 @@
 import Audit from "../models/Audit.js"
+import ApiResponse from "../utils/ApiResponse.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 
 export const showAllAudits = async(req, res) =>{
     try{
@@ -7,10 +9,12 @@ export const showAllAudits = async(req, res) =>{
         {
             throw new Error("Audit data not present!");
         }
-        res.status(200).json(allAudits);
+        const response = new ApiResponse(200, "Successfully fetched all Audit Logs", allAudits);
+        res.status(200).json(response);
     }catch(err)
     {
-        res.status(400).json({message: err.message});
+        const response = new ErrorResponse(400, "error while fetching all audits", err.message);
+        res.status(400).json(response);
     }
 }
 
