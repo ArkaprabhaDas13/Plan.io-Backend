@@ -1,7 +1,8 @@
 import Task from "../models/Tasks.js"
-import Comment from "../models/Comments.js"
 import Project from "../models/Projects.js";
 import { createAuditLog } from "../services/createAuditLog.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 
 export const getAllTasks = async(req, res)=>{
     const reqPayload = req.user;
@@ -29,12 +30,31 @@ export const getAllTasks = async(req, res)=>{
     }
     try{
         const tasks = await Task.find(query).sort({dueDate: -1}).skip((page-1)*limit).limit(limit);     // PAGINATION implemented
-        res.status(200).json(tasks);
+        const response = new ApiResponse(200, "Successfully created a new task", tasks);
+        res.status(200).json(response);
     }catch(err)
     {
         res.status(500).json({
             message: err.message
         })
+    }
+}
+
+export const getOneTask = async (req, res)=>{
+    const taskId = req.params.taskId;
+    try{
+        const existingTask = await Task.findById(taskId);
+        if(req.user.userId != existingTask.createdBy.toString())
+        {
+            return res.status(400).json({message: "Unauthorized Task"});
+        }
+        if(!existingTask)
+        {
+            return res.status(400).json({message: "No Task found!"});
+        }
+        res.status(200).json(existingTask);
+    }catch(err){
+        res.status(400).json({message: err.message});
     }
 }
 
@@ -63,11 +83,11 @@ export const getProjectTasks = async(req, res)=>{
 
     try{
         const allTasks = await Task.find(query).sort({dueDate: -1}).skip((page-1)*limit).limit(limit);     // PAGINATION implemented
-        res.status(200).json(allTasks);
+        const response = new ApiResponse(200, "Successfully fetched all tasks", allTasks);
+        res.status(200).json(response);
     }catch(err){
-        res.status(500).json({
-            message: err.message
-        })
+        const response = new ErrorResponse(400, "error while getting all tasks", err.message);
+        res.status(500).json(response);
     }
 }
 
@@ -88,9 +108,8 @@ export const createTask = async(req, res)=>{
         res.status(200).json(createdTask);
     }catch(err)
     {
-        res.status(500).json({
-            message: err.message
-        })
+        const response = new ErrorResponse(400, "error while creating a new response", err.message);
+        res.status(500).json(response);
     }
 }
 
@@ -116,9 +135,8 @@ export const editTask = async(req, res)=>{
         res.status(200).json(editedTask);        
     }catch(err)
     {
-        res.status(500).json({
-            message: err.message
-        })
+        const response = new ErrorResponse(400, "error while editing task", err.message);
+        res.status(500).json(response);
     }
 }
 
@@ -144,37 +162,7 @@ export const deleteTask = async(req, res)=>{
         })
     }catch(err)
     {
-        res.status(500).json({
-            message: err.message
-        })
-    }
-}
-
-export const createComment = async(req, res)=>{
-    try{
-        const taskId = req.params.taskId;
-        const newComment = await Comment.create({
-            taskId: taskId,
-            userId: req.user.userId,
-            content: req.body.content
-        })
-        // Audit controller
-        createAuditLog(newComment._id, req.user.userId, "CREATE", "comment");
-        res.status(200).json({message: "Comment saved successfully!"})
-    }catch(err)
-    {
-        res.status(200).json({message: err.message});
-    }
-}
-
-export const getAllComments = async(req, res)=>{
-    try{
-        const taskId = req.params.taskId;
-        const allComments = await Comment.find({
-            taskId: taskId
-        }).populate("userId", "name email");
-        res.status(200).json({allComments});
-    }catch(err){
-        res.status(400).json({error: err.message});
+        const response = new ErrorResponse(400, "error while deleting a task", err.message);
+        res.status(500).json(response);
     }
 }

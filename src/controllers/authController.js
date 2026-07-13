@@ -4,6 +4,8 @@ import validator from 'email-validator';
 import jwt from 'jsonwebtoken';
 import Audit from "../models/Audit.js";
 import {createAuditLog} from "../services/createAuditLog.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 
 async function hashPassword(password){
     const saltRound = 12;
@@ -33,10 +35,13 @@ export const registerUser = async(req, res)=>{
         })
         // Audit controller
         createAuditLog(newUser._id, newUser._id, "CREATE", "user");
-        res.status(201).json({message: "User creation successful!"});
+
+        const response = new ApiResponse(200, "Successfully created a new User", newUser);
+        res.status(201).json(response);
     }catch(err)
     {
-        res.status(400).json({message: err.message});
+        const response = new ErrorResponse(400, "error while registering a new user", err.message);
+        res.status(400).json(response);
     }
 }
 
@@ -64,17 +69,20 @@ export const loginUser = async(req, res)=>{
         const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '24h'})
         // Audit controller
         createAuditLog(existingUser._id, existingUser._id, "LOGIN", "user");
-        return res.status(200).json({
-            message: "User logged in!",
-            token: token,
-            user: {
+        const responseUserDetails = {
+            user:{
+                _id: existingUser._id,
                 name: existingUser.name,
                 email: existingUser.email
-            }
-        })
+            },
+            token: token
+        }
+        const response = new ApiResponse(200, "Successfully Logged In", responseUserDetails);
+        return res.status(200).json(response);
     }catch(err)
     {
-        res.status(500).json({message: err.message});
+        const response = new ErrorResponse(400, "Error while logging in", err.message);
+        res.status(500).json(response);
     }
 }
 
@@ -83,10 +91,11 @@ export const aboutMe = async (req, res)=>{
         const reqPayload = req.user;
         // find existing user
         let existingUser = await User.findById(reqPayload.userId).select("-password -_id -createdAt -updatedAt -__v");
-        console.log(existingUser);
-        return res.status(200).json(existingUser);
+        const response = new ApiResponse(200, "User authenticated successfully", existingUser);
+        return res.status(200).json(response);
     }catch(err){
-        res.status(500).json({message: err.message});
+        const response = new ApiResponse(400, "Error in authenticating user", err.message)
+        res.status(500).json(response);
     }
 }
 
@@ -96,9 +105,8 @@ export const logout = async (req, res)=>{
         console.log(loggedInUser);
         // Audit controller
         createAuditLog(loggedInUser._id, loggedInUser._id, "LOGOUT", "user");
-        res.status(200).json({
-            message: "Successfully Logged Out!"
-        });
+        const response = new ApiResponse(200, "User Logged Out successfully!");
+        res.status(200).json(response);
     }catch(err){
         res.status(400).json({message: err.message});
     }

@@ -5,7 +5,6 @@ import connectDB from './src/config/db.js';
 import testRoutes from './src/routes/testRoutes.js';
 import taskRoutes from './src/routes/taskRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
-import commentRoutes from './src/routes/commentRoutes.js'
 import auditRoutes from './src/routes/auditRoutes.js'
 import projectRoutes from './src/routes/projectRoutes.js'
 
@@ -17,11 +16,10 @@ app.use(express.json());
 app.use('/api/', testRoutes);
 app.use('/api/task/', taskRoutes);
 app.use('/api/auth/', authRoutes);
-app.use('/api/comments/', commentRoutes);
 app.use('/api/audit/', auditRoutes);
 app.use('/api/project/', projectRoutes);
 
-// GLOBAL error handling
+// GLOBAL Middleware for error handling
 app.use((err, req, res, next)=>{
     res.status(500).json({
         message: err.message
