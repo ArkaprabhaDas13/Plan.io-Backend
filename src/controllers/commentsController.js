@@ -3,55 +3,46 @@ import { createAuditLog } from "../services/createAuditLog.js";
 import Task from '../models/Tasks.js';
 import ApiResponse from "../utils/ApiResponse.js"; 
 import ErrorResponse from "../utils/ErrorResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const getAllComments = async(req, res)=>{
-    try{
-        const taskId = req.params.taskId;
-        const ContainingTask = await Task.find({_id: taskId});
-        if(!ContainingTask)
-        {
-            throw new Error("Invalid task ID")
-        }
-        const allComments = await TaskComment.find({taskId}).populate("createdBy", "name email");
-        if(!allComments)
-        {
-            throw new Error(`error while fetching all comments for ${taskId}`);
-        }
-        const response = new ApiResponse(200, "successfully fetched all the data", allComments);
-        res.status(200).json(response);
-    }catch(err){
-        const response = new ErrorResponse(400, "error while getting all comments", err.message);
-        res.status(400).json(response);
+export const getAllComments = asyncHandler(async(req, res)=>{
+    const taskId = req.params.taskId;
+    const ContainingTask = await Task.find({_id: taskId});
+    if(!ContainingTask)
+    {
+        throw new Error("Invalid task ID")
     }
-}
+    const allComments = await TaskComment.find({taskId}).populate("createdBy", "name email");
+    if(!allComments)
+    {
+        throw new Error(`error while fetching all comments for ${taskId}`);
+    }
+    const response = new ApiResponse(200, "successfully fetched all the data", allComments);
+    res.status(200).json(response);
+});
 
-export const createComment = async(req, res)=>{
+export const createComment = asyncHandler(async(req, res)=>{
     console.log(req.body.createdBy);
     console.log(req.user.userId);
-    try{
-        const user = req.user;
-        const taskId = req.params.taskId;
-        if(req.body.createdBy !== user.userId)
-        {
-            throw new Error("Something went wrong, please login again!");
-        }
-        const createdComment = await TaskComment.create({
-            description: req.body.description,
-            createdBy: user.userId,
-            taskId: taskId
-        })
-        if(!createdComment)
-        {
-            throw new Error("Error while creating a new Comment!");
-        }
-        createAuditLog(createdComment._id, user.userId, "CREATE", "comment");
-        const response = new ApiResponse(201, "successfully created comment", createdComment);
-        res.status(200).json(response);
-    }catch(err){
-        const response = new ErrorResponse(400, "error while creating a new comment", err.message);
-        res.status(400).json(response);
+    const user = req.user;
+    const taskId = req.params.taskId;
+    if(req.body.createdBy !== user.userId)
+    {
+        throw new Error("Something went wrong, please login again!");
     }
-}
+    const createdComment = await TaskComment.create({
+        description: req.body.description,
+        createdBy: user.userId,
+        taskId: taskId
+    })
+    if(!createdComment)
+    {
+        throw new Error("Error while creating a new Comment!");
+    }
+    createAuditLog(createdComment._id, user.userId, "CREATE", "comment");
+    const response = new ApiResponse(201, "successfully created comment", createdComment);
+    res.status(200).json(response);
+});
 
 // export const editComment = async (req, res)=>{
 //     try{

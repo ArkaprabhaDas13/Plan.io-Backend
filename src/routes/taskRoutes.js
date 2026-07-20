@@ -3,6 +3,7 @@ import Task from './../models/Tasks.js';
 import { getAllTasks, createTask, editTask, deleteTask, getProjectTasks, getOneTask } from '../controllers/taskController.js';
 import { createComment, getAllComments } from '../controllers/commentsController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
