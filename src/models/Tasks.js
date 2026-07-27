@@ -8,7 +8,7 @@ const TaskSchema = mongoose.Schema({
         status: {type: String, enum:['active', 'inactive']},
         priority: {type: String},
         dueDate: {type: Date},
-        projectId: {type: ObjectId, ref: Project},
+        projectId: {type: ObjectId, ref: Project, required: true},
         createdBy: {type: ObjectId, required: true},
     },
     {
