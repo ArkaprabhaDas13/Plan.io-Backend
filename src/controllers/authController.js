@@ -22,9 +22,8 @@ export const registerUser = asyncHandler(async(req, res)=>{
     })
     if(existingUser)
     {
-        return res.status(409).json({
-            message: "User already present. Please login!"
-        })
+        const errorResponse = new ErrorResponse(409, "User already Present, please login!", "User exists");
+        return res.status(409).json(errorResponse);
     }
     // creating new user
     const hashedPassword = await hashPassword(password);
@@ -45,9 +44,8 @@ export const loginUser = asyncHandler(async(req, res)=>{
     const existingUser = await User.findOne({email: email});
     if(!existingUser)
     {
-        return res.status(401).json({
-            message: "User not found!"
-        })
+        const errorResponse = new ErrorResponse(401, "User Not found", "user not found");
+        return res.status(401).json(errorResponse);
     }
     const isPasswordCorrect = await bcrypt.compare(password, existingUser?.password)
     if(!isPasswordCorrect){
