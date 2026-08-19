@@ -5,13 +5,14 @@ import Task from "../models/Tasks.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import mongoose from "mongoose";
 
 export const createProject = asyncHandler(async (req, res) => {
     const newProject = await Project.create({
         name: req.body.name,
         description: req.body.description,
         createdBy: req.user.userId,
-        status: 'active'
+        status: req.body.status
     })
     if(!newProject)
     {
@@ -122,3 +123,25 @@ export const getProjectTasks = asyncHandler(async(req, res)=>{
     const response = new ApiResponse(200, "successfully fetched all the tasks", allTasks);
     res.status(200).json(response);
 });
+
+
+// AGGREGATION - Group
+export const getProjectStats = asyncHandler(async(req, res)=>{
+
+    const myUserId = new mongoose.Types.ObjectId(req.user.userId);
+    const stats = await Project.aggregate([
+        {
+            $match:{
+                createdBy: myUserId         // matching - created by me only
+            }
+        },
+        {
+            $group: {
+                _id: "$status",             // group - grouping by status
+                count: {$sum: 1}
+            }
+        }
+    ])
+
+    res.status(200).json({statisticsData: stats})
+})
