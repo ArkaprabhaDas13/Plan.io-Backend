@@ -5,7 +5,7 @@ import Project from './Projects.js';
 const TaskSchema = mongoose.Schema({
         title: {type: String, required: true},
         description: {type: String},
-        status: {type: String, enum:['active', 'inactive']},
+        status: {type: String, enum:['completed', 'incomplete']},
         priority: {type: String},
         dueDate: {type: Date},
         projectId: {type: ObjectId, ref: Project, required: true},

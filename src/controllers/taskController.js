@@ -82,7 +82,8 @@ export const createTask = asyncHandler(async(req, res)=>{
         title: req.body.title,
         description: req.body.description,
         createdBy: req.user.userId,
-        projectId: req.body.projectId
+        projectId: req.body.projectId,
+        status: req.body.status
     })
     if(!createdTask)
     {
